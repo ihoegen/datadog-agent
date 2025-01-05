@@ -1418,6 +1418,7 @@ func (g GPU) String(verbose bool) string {
 
 	return sb.String()
 }
+
 // CollectorStatus is the status of collector which is used to determine if the collectors
 // are not started, starting, started (pulled once)
 type CollectorStatus uint8
