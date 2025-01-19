@@ -15,7 +15,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -1663,8 +1662,6 @@ func (p *EBPFProbe) RefreshUserCache(containerID containerutils.ContainerID) err
 // Snapshot runs the different snapshot functions of the resolvers that
 // require to sync with the current state of the system
 func (p *EBPFProbe) Snapshot() error {
-	// the snapshot for the read of a lot of file which can allocate a lot of memory.
-	defer runtime.GC()
 	return p.Resolvers.Snapshot()
 }
 
