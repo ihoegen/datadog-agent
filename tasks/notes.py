@@ -62,7 +62,7 @@ def update_changelog(ctx, release_branch, target="all", upstream="origin"):
     will be generated.
     """
 
-    new_version = deduce_version(ctx, release_branch, next_version=False)
+    new_version = deduce_version(ctx, release_branch, next_version=True)
     new_version_int = list(map(int, new_version.split(".")))
     if len(new_version_int) != 3:
         print(f"Error: invalid version: {new_version_int}")
