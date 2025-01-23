@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import tempfile
 from collections import defaultdict
 from contextlib import contextmanager
 from glob import glob
+from itertools import chain
 from pathlib import Path
 
 import yaml
@@ -273,3 +275,138 @@ def show_all(_, base_dir: str = '.', ignored=False):
 
     print('\n'.join(sorted(names)))
     print(len(names), 'modules')
+
+
+repo_name = "github.com/DataDog/datadog-agent/"
+replace_comment = "// This section was automatically added by 'invoke modules.add-all-replace'/'invoke modules.clean-unused-replace' command, do not edit manually\n\n"
+
+
+def remove_replace_rules(data: str) -> str:
+    # remove all replace block
+    data = re.sub("\tgithub.com/DataDog/datadog-agent/.+ => .+", '', data)
+    data = re.sub("replace github.com/DataDog/datadog-agent/[^ ]+ => .+", '', data)
+    data = re.sub(r"replace \(\s+\)", '', data)
+    data = re.sub("// This section was automatically added by 'invoke .+", '', data)
+    return data
+
+
+@task
+def add_all_replace(ctx: Context, target: str = "."):
+    """
+    This command will add all the replace rules to all go.mod even if not used. This ensure that go mod tidy will work
+    and not replace rule is missing.
+
+    It's meant to be used as the following:
+    - running `inv modules.add-all-replace` to add all possible replace rules to all go.mod
+    - `inv tidy` to update all the go.mod
+    - Fix any erros
+    - `inv modules.clean-unused-replace` to remove unnecessary replace
+
+    This solve the problem of `go mod tidy` failing if some replace rules are missing but needing `go mod tidy` to run
+    successfully to know which replace rules are needed. This is a major pain point when creating/moving go.mod.
+    """
+
+    # First we find all go.mod in comp and pkg
+    gomods = []
+    paths = ("comp", "pkg")
+    for root, _, files in chain.from_iterable(os.walk(path) for path in paths):
+        for file in files:
+            if file == "go.mod":
+                gomods.append(root)
+    gomods = sorted(gomods)
+
+    # Cleanup pottential "./" or ".\" at the start of the target
+    target = target if not target.startswith(os.path.join(".", "")) else target[2:]
+    # Second we iterate over all go.mod
+    for root, _, files in os.walk(target):
+        for file in files:
+            if file != "go.mod":
+                continue
+
+            with open(os.path.join(root, file)) as f:
+                gomod = f.read()
+
+            prefix = re.sub(r"[^/\.]+", "..", root)
+            if prefix.endswith("/"):
+                prefix = prefix[:-1]
+
+            # remove all replace block
+            gomod = remove_replace_rules(gomod)
+
+            # inject all replace rules at the bottom
+            gomod += "\n" + replace_comment
+            gomod += "replace (\n"
+
+            for mod in gomods:
+                if root.endswith(mod):
+                    # don't add a replace for the current module
+                    continue
+                gomod += f"\t{repo_name}{mod} => {prefix}/{mod}\n"
+
+            gomod += ")\n"
+
+            # Last cleanup: remove concurrent line break
+            gomod = re.sub("\n{3,}", "\n\n", gomod)
+
+            with open(os.path.join(root, file), "w") as f:
+                f.write(gomod)
+                f.truncate()
+
+
+@task
+def clean_unused_replace(ctx: Context, target: str = "."):
+    """
+    This command will cleanup unnecessary replace rules from go.mod.
+
+    It's meant to be used as the following:
+    - running `inv modules.add-all-replace` to add all possible replace rules to all go.mod
+    - `inv tidy` to update all the go.mod
+    - Fix any erros
+    - `inv modules.clean-unused-replace` to remove unnecessary replace
+
+    This solve the problem of `go mod tidy` failing if some replace rules are missing but needing `go mod tidy` to run
+    successfully to know which replace rules are needed. This is a major pain point when creating/moving go.mod.
+    """
+
+    # Cleanup pottential "./" or ".\" at the start of the target
+    target = target if not target.startswith(os.path.join(".", "")) else target[2:]
+    # Second we iterate over all go.mod
+    for root, _, files in os.walk(target):
+        for file in files:
+            if file != "go.mod":
+                continue
+
+            # collect all "github.com/DataDog/datadog-agent/" required packages
+            with open(os.path.join(root, file)) as f:
+                gomod = f.read()
+
+            used_modules = re.findall("datadog-agent/([^ ]+) v", gomod)
+
+            replace_blocks = re.findall("replace \\(\n([^)]+)", gomod)
+            rules_kept = []
+            for replace_rules in replace_blocks:
+                for rule in replace_rules.split("\n"):
+                    package = re.findall(repo_name + "([^ ]+) =>", rule)
+                    if len(package) == 0:
+                        continue
+                    if package[0] in used_modules:
+                        rules_kept.append(rule)
+
+            gomod = remove_replace_rules(gomod)
+
+            # inject all replace rules at the bottom
+            if len(rules_kept) != 0:
+                gomod += "\n" + replace_comment
+                gomod += "replace (\n" + "\n".join(rules_kept) + "\n)"
+
+            # remove empty replace block
+            gomod = re.sub(r"replace \(\s+\)", '', gomod)
+
+            # Last cleanup: remove concurrent line break
+            gomod = re.sub("\n{3,}", "\n\n", gomod)
+            # trim file but keep a last line break
+            gomod = gomod.strip() + "\n"
+
+            with open(os.path.join(root, file), "w") as f:
+                f.write(gomod)
+                f.truncate()
