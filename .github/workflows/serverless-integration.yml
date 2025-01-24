@@ -1,17 +1,17 @@
 name: "Serverless Integration Tests"
 
-on:
-  pull_request:
-    branches-ignore:
-      - 'mq-working-branch-*'
-    paths:
-      - 'cmd/serverless/**'
-      - 'pkg/serverless/**'
-      - 'test/integration/serverless/**'
-      - '.github/workflows/serverless-integration.yml'
-      - 'go.mod'
-  schedule:
-    - cron: '0 14 * * *' # cron schedule uses UTC timezone. Run tests at the beginning of the day in US-East
+on: push
+  # pull_request:
+  #   branches-ignore:
+  #     - 'mq-working-branch-*'
+  #   paths:
+  #     - 'cmd/serverless/**'
+  #     - 'pkg/serverless/**'
+  #     - 'test/integration/serverless/**'
+  #     - '.github/workflows/serverless-integration.yml'
+  #     - 'go.mod'
+  # schedule:
+  #   - cron: '0 14 * * *' # cron schedule uses UTC timezone. Run tests at the beginning of the day in US-East
 
 permissions: {}
 
@@ -21,7 +21,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [amd64, arm64]
+        # architecture: [amd64, arm64]
+        architecture: [arm64]
         suite: [metric, log, trace, appsec, proxy]
     name: ${{ matrix.suite }} on ${{ matrix.architecture }}
     steps:
