@@ -6,12 +6,60 @@
 package snmpscanimpl
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/DataDog/datadog-agent/pkg/networkdevice/metadata"
 	"github.com/DataDog/datadog-agent/pkg/snmp/gosnmplib"
 	"github.com/gosnmp/gosnmp"
 )
+
+func (s snmpScannerImpl) ScanDevice(snmp *gosnmp.GoSNMP, namespace string, deviceID string) error {
+	inProgressStatusPayload := metadata.NetworkDevicesMetadata{
+		DeviceScanStatus: &metadata.ScanStatusMetadata{
+			DeviceID:   deviceID,
+			ScanStatus: metadata.ScanStatusInProgress,
+		},
+		CollectTimestamp: time.Now().Unix(),
+		Namespace:        namespace,
+	}
+	if err := s.SendPayload(inProgressStatusPayload); err != nil {
+		s.log.Errorf("unable to notify : %v", err)
+	}
+
+	if err := snmp.Connect(); err != nil {
+		// Send an error status if we can't connect to the agent
+		errorStatusPayload := metadata.NetworkDevicesMetadata{
+			DeviceScanStatus: &metadata.ScanStatusMetadata{
+				DeviceID:   deviceID,
+				ScanStatus: metadata.ScanStatusError,
+			},
+			CollectTimestamp: time.Now().Unix(),
+			Namespace:        namespace,
+		}
+		if err := s.SendPayload(errorStatusPayload); err != nil {
+			s.log.Errorf("unable to send error status: %v", err)
+		}
+		return fmt.Errorf("unable to connect to SNMP agent on %s:%d: %w", snmp.LocalAddr, snmp.Port, err)
+	}
+	err := s.RunDeviceScan(snmp, namespace, deviceID)
+	if err != nil {
+		// Send an error status if we can't scan the device
+		errorStatusPayload := metadata.NetworkDevicesMetadata{
+			DeviceScanStatus: &metadata.ScanStatusMetadata{
+				DeviceID:   deviceID,
+				ScanStatus: metadata.ScanStatusError,
+			},
+			CollectTimestamp: time.Now().Unix(),
+			Namespace:        namespace,
+		}
+		if err = s.SendPayload(errorStatusPayload); err != nil {
+			return s.log.Errorf("unable to send error status: %v", err)
+		}
+		return fmt.Errorf("unable to perform device scan: %v", err)
+	}
+
+}
 
 func (s snmpScannerImpl) RunDeviceScan(snmpConnection *gosnmp.GoSNMP, deviceNamespace string, deviceID string) error {
 	// execute the scan
