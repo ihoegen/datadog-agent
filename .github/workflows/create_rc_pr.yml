@@ -10,7 +10,7 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   AGENT6_RELEASE_BRANCH: '6.53.x'
-  IS_AGENT6_RELEASE: ${{ github.event.schedule == '0 9 * * 1' }}
+  IS_AGENT6_RELEASE: 'true'
 permissions: {}
 
 jobs:
@@ -119,11 +119,12 @@ jobs:
               env:
                 MATRIX: ${{ matrix.value }}
               run: |
-                if ${{ env.IS_AGENT6_RELEASE == 'true' }}; then
-                  inv -e release.create-rc -r "$MATRIX" --slack-webhook=${{ secrets.AGENT6_RELEASE_SLACK_WEBHOOK }} --patch-version
-                else
-                  inv -e release.create-rc -r "$MATRIX" --slack-webhook=${{ secrets.AGENT_RELEASE_SYNC_SLACK_WEBHOOK }}
-                fi
+                echo ${{ env.IS_QUALIFICATION }}
+                # if ${{ env.IS_AGENT6_RELEASE == 'true' }}; then
+                #   inv -e release.create-rc -r "$MATRIX" --slack-webhook=${{ secrets.AGENT6_RELEASE_SLACK_WEBHOOK }} --patch-version
+                # else
+                #   inv -e release.create-rc -r "$MATRIX" --slack-webhook=${{ secrets.AGENT_RELEASE_SYNC_SLACK_WEBHOOK }}
+                # fi
 
             - name: Rebuild agent 6 RC pipeline if no changes and in qualification phase
               if: ${{ env.IS_AGENT6_RELEASE == 'true' && steps.check_for_changes.outputs.CHANGES == 'false' && env.IS_QUALIFICATION == 'true' }}
