@@ -7,6 +7,7 @@ package workloadmeta
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -1140,6 +1141,12 @@ func (i ContainerImageMetadata) String(verbose bool) string {
 			switch i.SBOM.Status {
 			case Success:
 				_, _ = fmt.Fprintf(&sb, "Generated in: %.2f seconds\n", i.SBOM.GenerationDuration.Seconds())
+				content, err := json.Marshal(i.SBOM.CycloneDXBOM)
+				if err != nil {
+					_, _ = fmt.Fprintf(&sb, "Error marshalling SBOM: %s\n", err)
+				} else {
+					_, _ = fmt.Fprintf(&sb, "SBOM content: %s\n", string(content))
+				}
 			case Failed:
 				_, _ = fmt.Fprintf(&sb, "Error: %s\n", i.SBOM.Error)
 			default:
