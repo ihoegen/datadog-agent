@@ -238,7 +238,7 @@ require (
 
 require (
 	github.com/hashicorp/go-version v1.7.0 // indirect
-	go.opentelemetry.io/collector/featuregate v1.24.1-0.20250123125445-24f88da7b583 // indirect
+	go.opentelemetry.io/collector/featuregate v1.24.1-0.20250123125445-24f88da7b583
 )
 
 require (
