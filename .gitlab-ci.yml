@@ -549,6 +549,7 @@ workflow:
     variables:
       AGENT_REPOSITORY: ci/datadog-agent/agent-release
       CLUSTER_AGENT_REPOSITORY: ci/datadog-agent/cluster-agent-release
+      CLUSTER_AGENT_FIPS_REPOSITORY: ci/datadog-agent/cluster-agent-fips-release
       DSD_REPOSITORY: ci/datadog-agent/dogstatsd-release
       IMG_REGISTRIES: internal-aws-ddbuild
 
@@ -566,6 +567,7 @@ workflow:
     variables:
       AGENT_REPOSITORY: ci/datadog-agent/agent-release
       CLUSTER_AGENT_REPOSITORY: ci/datadog-agent/cluster-agent-release
+      CLUSTER_AGENT_FIPS_REPOSITORY: ci/datadog-agent/cluster-agent-fips-release
       DSD_REPOSITORY: ci/datadog-agent/dogstatsd-release
       IMG_REGISTRIES: internal-aws-ddbuild
 
