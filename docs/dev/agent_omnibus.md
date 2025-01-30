@@ -1,7 +1,7 @@
 # Build the Agent packages
 
 Agent packages for all the supported platforms are built using
-[Omnibus](https://github.com/chef/omnibus), which can be run via `invoke` tasks.
+[Omnibus](https://github.com/chef/omnibus), which can be run via [deva](https://datadoghq.dev/datadog-agent/setup/#tooling) commands.
 
 Omnibus creates a package for your operating system, so you'll get a DEB
 package on Debian-based distros, an RPM package on distros that use RPM, an MSI
@@ -19,7 +19,7 @@ From the `datadog-agent` source folder, use the following command to run the
 `omnibus.build` task in a Docker container:
 
 ```
-docker run -v "$PWD:/go/src/github.com/DataDog/datadog-agent" -v "/tmp/omnibus:/omnibus" -v "/tmp/opt/datadog-agent:/opt/datadog-agent" -v"/tmp/gems:/gems" --workdir=/go/src/github.com/DataDog/datadog-agent datadog/agent-buildimages-deb_x64 inv -e omnibus.build --base-dir=/omnibus --gem-path=/gems
+docker run -v "$PWD:/go/src/github.com/DataDog/datadog-agent" -v "/tmp/omnibus:/omnibus" -v "/tmp/opt/datadog-agent:/opt/datadog-agent" -v"/tmp/gems:/gems" --workdir=/go/src/github.com/DataDog/datadog-agent datadog/agent-buildimages-deb_x64 deva inv -e omnibus.build --base-dir=/omnibus --gem-path=/gems
 ```
 
 The container will share 3 volumes with the host to avoid starting from scratch

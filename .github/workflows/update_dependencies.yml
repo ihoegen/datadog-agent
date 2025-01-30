@@ -33,8 +33,10 @@ jobs:
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           cache: "pip"
-      - name: Install dependencies
-        run: pip install -r requirements.txt -r tasks/requirements.txt
+      - name: Install deva
+        uses: ./.github/actions/install-deva
+        with:
+          features: legacy-tasks
       - name: Update every golang.org/x/... package
         run: |
           go get -u golang.org/x/arch golang.org/x/crypto \
@@ -46,8 +48,8 @@ jobs:
                     golang.org/x/exp
           # run tidy twice because the first one doesn't always clean everything
           # depending on module order
-          inv -e tidy
-          inv -e tidy
+          deva inv -e tidy
+          deva inv -e tidy
       - uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842 # v5.0.1
         id: autocommit
         with:

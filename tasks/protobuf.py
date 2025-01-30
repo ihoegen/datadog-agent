@@ -148,6 +148,6 @@ def generate(ctx, do_mockgen=True):
     updates = ctx.run("git status -suno").stdout.strip()
     if updates:
         raise Exit(
-            "Generated files were not properly committed. Please run `inv protobuf.generate` and commit the changes.",
+            "Generated files were not properly committed. Please run `deva inv protobuf.generate` and commit the changes.",
             code=1,
         )

@@ -67,7 +67,8 @@ RUN go version && \
 RUN python3 -m venv venv && \
     . venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install datadog-agent-dev && \
+    deva self dep sync -f legacy-tasks
 
 # Copy the manifest file
 COPY manifest.yaml /workspace/datadog-agent-${AGENT_VERSION}/comp/otelcol/collector-contrib/impl/manifest.yaml

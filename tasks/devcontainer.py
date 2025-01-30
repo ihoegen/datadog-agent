@@ -144,7 +144,7 @@ def stop(ctx):
     """
     if not file().exists():
         print(
-            color_message("No devcontainer settings found. Run `inv devcontainer.setup` first and start it.", Color.RED)
+            color_message("No devcontainer settings found. Run `deva inv devcontainer.setup` first and start it.", Color.RED)
         )
         raise Exit(code=1)
 

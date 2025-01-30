@@ -33,7 +33,10 @@ jobs:
         with:
           python-version-file: .python-version
           cache: "pip"
-      - run: pip3 install -r requirements.txt
+      - name: Install deva
+        uses: ./.github/actions/install-deva
+        with:
+          features: legacy-tasks
 
       - name: Setup env variables
         run: |
@@ -62,9 +65,9 @@ jobs:
 
       - name: Build DataDog agent
         run: |
-          invoke install-tools
-          invoke deps
-          invoke agent.build --build-exclude=systemd
+          deva inv install-tools
+          deva inv deps
+          deva inv agent.build --build-exclude=systemd
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9

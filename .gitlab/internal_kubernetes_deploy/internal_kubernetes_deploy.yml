@@ -53,7 +53,7 @@ internal_kubernetes_deploy_experimental:
     BUNDLE_VERSION_OVERRIDE: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   script:
     - GITLAB_TOKEN=$($CI_PROJECT_DIR/tools/ci/fetch_secret.sh $GITLAB_TOKEN write_api) || exit $?; export GITLAB_TOKEN
-    - "inv pipeline.trigger-child-pipeline --project-name DataDog/k8s-datadog-agent-ops --git-ref main
+    - "deva inv pipeline.trigger-child-pipeline --project-name DataDog/k8s-datadog-agent-ops --git-ref main
         --variable OPTION_AUTOMATIC_ROLLOUT
         --variable EXPLICIT_WORKFLOWS
         --variable OPTION_PRE_SCRIPT
@@ -83,5 +83,6 @@ notify-slack:
   needs: ["internal_kubernetes_deploy_experimental"]
   script:
     - export SDM_JWT=$(vault read -field=token identity/oidc/token/sdm)
-    - python3 -m pip install -r tasks/requirements.txt
-    - inv pipeline.changelog ${CI_COMMIT_SHORT_SHA} || exit $?
+    - python3 -m pip install datadog-agent-dev=="$(cat .deva/version)"
+    - python3 -m deva self dep sync -f legacy-tasks
+    - python3 -m deva inv pipeline.changelog ${CI_COMMIT_SHORT_SHA} || exit $?
