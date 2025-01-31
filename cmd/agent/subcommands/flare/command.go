@@ -242,11 +242,13 @@ func readProfileData(seconds int) (flare.ProfileData, error) {
 		"security-agent": serviceProfileCollector(tcpGet("security_agent.expvar_port", false), seconds),
 	}
 
-	if pkgconfigsetup.Datadog().GetBool("process_config.enabled") ||
-		pkgconfigsetup.Datadog().GetBool("process_config.container_collection.enabled") ||
-		pkgconfigsetup.Datadog().GetBool("process_config.process_collection.enabled") {
+	if !pkgconfigsetup.Datadog().GetBool("process_config.run_in_core_agent.enabled") {
+		if pkgconfigsetup.Datadog().GetBool("process_config.enabled") ||
+			pkgconfigsetup.Datadog().GetBool("process_config.container_collection.enabled") ||
+			pkgconfigsetup.Datadog().GetBool("process_config.process_collection.enabled") {
 
-		agentCollectors["process"] = serviceProfileCollector(tcpGet("process_config.expvar_port", false), seconds)
+			agentCollectors["process"] = serviceProfileCollector(tcpGet("process_config.expvar_port", false), seconds)
+		}
 	}
 
 	if pkgconfigsetup.Datadog().GetBool("apm_config.enabled") {
