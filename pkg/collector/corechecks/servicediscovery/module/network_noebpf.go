@@ -13,6 +13,9 @@ func newNetworkCollector(_ *discoveryConfig) (networkCollector, error) {
 	return &nopNetworkCollector{}, nil
 }
 
+func (c *nopNetworkCollector) close() {
+}
+
 func (c *nopNetworkCollector) addPid(_ uint32) error {
 	return nil
 }

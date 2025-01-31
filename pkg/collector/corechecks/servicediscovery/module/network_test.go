@@ -108,6 +108,7 @@ func TestNetworkCollector(t *testing.T) {
 			config := discoveryConfig{Config: ebpf.Config{BPFDebug: true}}
 			collector, err := newNetworkCollector(&config)
 			require.NoError(t, err)
+			t.Cleanup(func() { collector.close() })
 
 			runServer(t, test.proto, test.addr)
 

@@ -231,6 +231,11 @@ func (s *discovery) Register(httpMux *module.Router) error {
 func (s *discovery) Close() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
+
+	s.cleanCache(pidSet{})
+	if s.network != nil {
+		s.network.close()
+	}
 	clear(s.cache)
 	clear(s.ignorePids)
 }

@@ -47,6 +47,18 @@ func (mr *MocknetworkCollectorMockRecorder) addPid(pid interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "addPid", reflect.TypeOf((*MocknetworkCollector)(nil).addPid), pid)
 }
 
+// close mocks base method.
+func (m *MocknetworkCollector) close() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "close")
+}
+
+// close indicates an expected call of close.
+func (mr *MocknetworkCollectorMockRecorder) close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "close", reflect.TypeOf((*MocknetworkCollector)(nil).close))
+}
+
 // getStats mocks base method.
 func (m *MocknetworkCollector) getStats(pid uint32) (NetworkStats, error) {
 	m.ctrl.T.Helper()

@@ -8,6 +8,7 @@ package module
 //go:generate mockgen -source=$GOFILE -package=$GOPACKAGE -destination=network_mock.go
 
 type networkCollector interface {
+	close()
 	addPid(pid uint32) error
 	removePid(pid uint32) error
 	getStats(pid uint32) (NetworkStats, error)

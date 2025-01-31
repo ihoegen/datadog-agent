@@ -75,6 +75,10 @@ func newNetworkCollector(cfg *discoveryConfig) (networkCollector, error) {
 	return &collector, nil
 }
 
+func (c *eBPFNetworkCollector) close() {
+	c.m.Manager.Stop(manager.CleanAll)
+}
+
 func (c *eBPFNetworkCollector) addPid(pid uint32) error {
 	key := NetworkStatsKey{Pid: pid}
 	var val NetworkStats
