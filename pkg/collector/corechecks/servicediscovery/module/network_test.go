@@ -82,7 +82,8 @@ func runClient(t *testing.T, proto, addr string) {
 		stdin.Write(b)
 	}()
 
-	_, err = cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
+	t.Log("socat", string(output))
 	require.NoError(t, err)
 }
 
