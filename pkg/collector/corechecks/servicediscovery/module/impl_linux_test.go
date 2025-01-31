@@ -121,16 +121,16 @@ func setupDiscoveryModule(t *testing.T) (string, *proccontainersmocks.MockContai
 	return setupDiscoveryModuleWithNetwork(t, newNetworkCollector)
 }
 
-func getServicesWithParams(t require.TestingT, url string, params map[string]string) *model.ServicesResponse {
+func getServicesWithParams(t require.TestingT, url string, params *params) *model.ServicesResponse {
 	location := url + "/" + string(config.DiscoveryModule) + pathServices
 	req, err := http.NewRequest(http.MethodGet, location, nil)
 	require.NoError(t, err)
 
-	qp := req.URL.Query()
-	for k, v := range params {
-		qp.Set(k, v)
+	if params != nil {
+		qp := req.URL.Query()
+		params.updateQuery(qp)
+		req.URL.RawQuery = qp.Encode()
 	}
-	req.URL.RawQuery = qp.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
@@ -1076,7 +1076,7 @@ func TestCache(t *testing.T) {
 	f.Close()
 
 	require.EventuallyWithT(t, func(collect *assert.CollectT) {
-		_, err = discovery.getServices(options{})
+		_, err = discovery.getServices(defaultParams())
 		require.NoError(collect, err)
 
 		for _, cmd := range cmds {
@@ -1096,7 +1096,7 @@ func TestCache(t *testing.T) {
 		cmd.Wait()
 	}
 
-	_, err = discovery.getServices(options{})
+	_, err = discovery.getServices(defaultParams())
 	require.NoError(t, err)
 
 	for _, cmd := range cmds {
