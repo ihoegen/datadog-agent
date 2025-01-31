@@ -5,7 +5,7 @@
 
 package module
 
-//go:generate mockgen -source=$GOFILE -package=$GOPACKAGE -destination=network_mock.go
+//go:generate mockgen -source=$GOFILE -package=$GOPACKAGE -destination=network_mock_linux.go
 
 type networkCollector interface {
 	close()
