@@ -52,11 +52,6 @@ var (
 		env: []string{},
 		cwd: "",
 	}
-	procTestService1Repeat = testProc{
-		pid: 101,
-		env: []string{},
-		cwd: "",
-	}
 )
 
 var (
@@ -115,19 +110,6 @@ var (
 		Ports:                      []uint16{5000},
 		Type:                       "web_service",
 		CommandLine:                pythonCommandLine,
-		StartTimeMilli:             procLaunchedMilli,
-		ContainerID:                dummyContainerID,
-	}
-	portTCP5432 = model.Service{
-		PID:                        procTestService1Repeat.pid,
-		Name:                       "test-service-1",
-		GeneratedName:              "test-service-1",
-		GeneratedNameSource:        "test-service-1-generated-source",
-		ContainerServiceName:       "test-service-1-container",
-		ContainerServiceNameSource: "service",
-		Ports:                      []uint16{5432},
-		Type:                       "db",
-		CommandLine:                []string{"test-service-1"},
 		StartTimeMilli:             procLaunchedMilli,
 		ContainerID:                dummyContainerID,
 	}
