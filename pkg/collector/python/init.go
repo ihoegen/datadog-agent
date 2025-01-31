@@ -247,6 +247,20 @@ func init() {
 	if v := os.Getenv("SETUPTOOLS_USE_DISTUTILS"); v == "" {
 		os.Setenv("SETUPTOOLS_USE_DISTUTILS", "stdlib")
 	}
+
+	fipsEnabled, err := fips.Enabled()
+	if err != nil {
+		log.Warnf("Error checking FIPS mode: %v", err)
+	}
+
+	resolvePythonHome()
+	if fipsEnabled {
+		err := initFIPS()
+		if err != nil {
+			log.Warnf("Error initializing FIPS mode: %v", err)
+		}
+	}
+
 }
 
 func expvarPythonInitErrors() interface{} {
@@ -303,7 +317,7 @@ func pathToBinary(name string, ignoreErrors bool) (string, error) {
 	return absPath, nil
 }
 
-func resolvePythonExecPath(ignoreErrors bool) (string, error) {
+func resolvePythonHome() {
 	// Allow to relatively import python
 	_here, err := executable.Folder()
 	if err != nil {
@@ -336,7 +350,9 @@ func resolvePythonExecPath(ignoreErrors bool) (string, error) {
 	PythonHome = pythonHome3
 
 	log.Infof("Using '%s' as Python home", PythonHome)
+}
 
+func resolvePythonExecPath(ignoreErrors bool) (string, error) {
 	// For Windows, the binary should be in our path already and have a
 	// consistent name
 	if runtime.GOOS == "windows" {
@@ -391,18 +407,6 @@ func Initialize(paths ...string) error {
 		return err
 	}
 	log.Debugf("Using '%s' as Python interpreter path", pythonBinPath)
-
-	fipsEnabled, err := fips.Enabled()
-	if err != nil {
-		log.Warnf("Error checking FIPS mode: %v", err)
-	}
-
-	if fipsEnabled {
-		err := initFIPS(PythonHome)
-		if err != nil {
-			log.Warnf("Error initializing FIPS mode: %v", err)
-		}
-	}
 
 	//nolint:revive // TODO(AML) Fix revive linter
 	var pyErr *C.char = nil
