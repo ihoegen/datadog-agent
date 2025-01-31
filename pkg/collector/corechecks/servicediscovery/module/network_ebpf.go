@@ -15,6 +15,7 @@ import (
 	ddebpf "github.com/DataDog/datadog-agent/pkg/ebpf"
 	"github.com/DataDog/datadog-agent/pkg/ebpf/bytecode"
 	ebpfmaps "github.com/DataDog/datadog-agent/pkg/ebpf/maps"
+	"github.com/DataDog/datadog-agent/pkg/util/log"
 )
 
 const statsMapName = "network_stats"
@@ -76,7 +77,9 @@ func newNetworkCollector(cfg *discoveryConfig) (networkCollector, error) {
 }
 
 func (c *eBPFNetworkCollector) close() {
-	c.m.Manager.Stop(manager.CleanAll)
+	if err := c.m.Stop(manager.CleanAll); err != nil {
+		log.Errorf("error stopping network collector: %v", err)
+	}
 }
 
 func (c *eBPFNetworkCollector) addPid(pid uint32) error {
