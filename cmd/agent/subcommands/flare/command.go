@@ -242,13 +242,15 @@ func readProfileData(seconds int) (flare.ProfileData, error) {
 		"security-agent": serviceProfileCollector(tcpGet("security_agent.expvar_port", false), seconds),
 	}
 
-	if !pkgconfigsetup.Datadog().GetBool("process_config.run_in_core_agent.enabled") {
-		if pkgconfigsetup.Datadog().GetBool("process_config.enabled") ||
+	processChecksInProcessAgent := !pkgconfigsetup.Datadog().GetBool("process_config.run_in_core_agent.enabled") &&
+		(pkgconfigsetup.Datadog().GetBool("process_config.enabled") ||
 			pkgconfigsetup.Datadog().GetBool("process_config.container_collection.enabled") ||
-			pkgconfigsetup.Datadog().GetBool("process_config.process_collection.enabled") {
+			pkgconfigsetup.Datadog().GetBool("process_config.process_collection.enabled"))
+	npmEnabled := pkgconfigsetup.SystemProbe().GetBool("network_config.enabled")
+	usmEnabled := pkgconfigsetup.SystemProbe().GetBool("service_monitoring_config.enabled")
 
-			agentCollectors["process"] = serviceProfileCollector(tcpGet("process_config.expvar_port", false), seconds)
-		}
+	if processChecksInProcessAgent || npmEnabled || usmEnabled {
+		agentCollectors["process"] = serviceProfileCollector(tcpGet("process_config.expvar_port", false), seconds)
 	}
 
 	if pkgconfigsetup.Datadog().GetBool("apm_config.enabled") {

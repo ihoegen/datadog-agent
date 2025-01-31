@@ -138,6 +138,7 @@ func (c *commandTestSuite) TestReadProfileData() {
 		mockSysProbeConfig := configmock.NewSystemProbe(t)
 		mockSysProbeConfig.SetWithoutSource("system_probe_config.enabled", true)
 		mockSysProbeConfig.SetWithoutSource("system_probe_config.sysprobe_socket", c.sysprobeSocketPath)
+		mockSysProbeConfig.SetWithoutSource("network_config.enabled", true)
 	}
 
 	data, err := readProfileData(10)
@@ -205,6 +206,7 @@ func (c *commandTestSuite) TestReadProfileDataNoTraceAgent() {
 	mockSysProbeConfig := configmock.NewSystemProbe(t)
 	mockSysProbeConfig.SetWithoutSource("system_probe_config.enabled", true)
 	mockSysProbeConfig.SetWithoutSource("system_probe_config.sysprobe_socket", c.sysprobeSocketPath)
+	mockSysProbeConfig.SetWithoutSource("network_config.enabled", true)
 
 	data, err := readProfileData(10)
 	require.Error(t, err)
