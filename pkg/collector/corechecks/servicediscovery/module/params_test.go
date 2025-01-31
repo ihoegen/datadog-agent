@@ -22,7 +22,7 @@ func TestParams(t *testing.T) {
 	require.Equal(t, def, params)
 
 	values.Set(heartbeatParam, "abc")
-	params, err = parseParams(values)
+	_, err = parseParams(values)
 	require.Error(t, err)
 
 	values.Set(heartbeatParam, "0")
