@@ -24,8 +24,8 @@ type eBPFNetworkCollector struct {
 	statsMap *ebpfmaps.GenericMap[NetworkStatsKey, NetworkStats]
 }
 
-func (s *eBPFNetworkCollector) setupManager(buf bytecode.AssetReader, options manager.Options) error {
-	s.m = ddebpf.NewManagerWithDefault(&manager.Manager{
+func (c *eBPFNetworkCollector) setupManager(buf bytecode.AssetReader, options manager.Options) error {
+	c.m = ddebpf.NewManagerWithDefault(&manager.Manager{
 		Probes: []*manager.Probe{
 			{ProbeIdentificationPair: manager.ProbeIdentificationPair{EBPFFuncName: "kretprobe__tcp_recvmsg", UID: "discovery"}},
 			{ProbeIdentificationPair: manager.ProbeIdentificationPair{EBPFFuncName: "kretprobe__tcp_sendmsg", UID: "discovery"}},
@@ -35,20 +35,20 @@ func (s *eBPFNetworkCollector) setupManager(buf bytecode.AssetReader, options ma
 		},
 	}, "discovery")
 
-	if err := s.m.InitWithOptions(buf, &options); err != nil {
+	if err := c.m.InitWithOptions(buf, &options); err != nil {
 		return fmt.Errorf("failed to init manager: %w", err)
 	}
 
-	if err := s.m.Start(); err != nil {
+	if err := c.m.Start(); err != nil {
 		return fmt.Errorf("failed to start manager: %w", err)
 	}
 
-	statsMap, err := ebpfmaps.GetMap[NetworkStatsKey, NetworkStats](s.m.Manager, statsMapName)
+	statsMap, err := ebpfmaps.GetMap[NetworkStatsKey, NetworkStats](c.m.Manager, statsMapName)
 	if err != nil {
 		return fmt.Errorf("failed to get map '%s': %w", statsMapName, err)
 	}
 
-	s.statsMap = statsMap
+	c.statsMap = statsMap
 
 	return nil
 }
