@@ -88,13 +88,28 @@ func runClient(t *testing.T, proto, addr string) {
 }
 
 func TestNetworkCollector(t *testing.T) {
-	for _, proto := range []string{"tcp4", "tcp6"} {
-		t.Run(proto, func(t *testing.T) {
+
+	a := []struct {
+		proto string
+		addr  string
+	}{
+		{
+			proto: "tcp4",
+			addr:  "127.0.0.1:8087",
+		},
+		{
+			proto: "tcp6",
+			addr:  "[::1]:8087",
+		},
+	}
+
+	for _, test := range a {
+		t.Run(test.proto, func(t *testing.T) {
 			config := discoveryConfig{Config: ebpf.Config{BPFDebug: true}}
 			collector, err := newNetworkCollector(&config)
 			require.NoError(t, err)
 
-			runServer(t, proto, ":8087")
+			runServer(t, test.proto, test.addr)
 
 			pid := uint32(os.Getpid())
 			err = collector.addPid(pid)
@@ -106,7 +121,7 @@ func TestNetworkCollector(t *testing.T) {
 			t.Log("stats before", before)
 
 			for i := 0; i < iterations; i++ {
-				runClient(t, proto, "localhost:8087")
+				runClient(t, test.proto, test.addr)
 
 				after, err := collector.getStats(pid)
 				require.NoError(t, err)
